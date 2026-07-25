@@ -55,3 +55,21 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Smart Boda Backend server running on port ${PORT}`);
 });
+const fs = require('fs');
+const path = require('path');
+const db = require('./config/db'); // This connects to your database
+
+app.get('/init-db', async (req, res) => {
+    try {
+        // This reads your existing schema.sql file
+        const schemaPath = path.join(__dirname, 'schema.sql');
+        const schema = fs.readFileSync(schemaPath, 'utf8');
+        
+        // This runs the SQL commands
+        await db.query(schema);
+        
+        res.status(200).send('Success: Database tables created using schema.sql!');
+    } catch (err) {
+        res.status(500).send('Error creating tables: ' + err.message);
+    }
+});
