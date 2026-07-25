@@ -1,8 +1,8 @@
+
 // authController.js - Authentication & PIN Management
 const db = require('./config/db');
-const bcrypt = require('bcryptjs').
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
 // 1. Rider Sign-In with Phone + 4-Digit PIN
 exports.riderLogin = async (req, res) => {
   const { phoneNumber, pin } = req.body;
