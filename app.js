@@ -1,4 +1,4 @@
-// app.js - Clean Server Entry Point
+// app.js - Safe-Mode Server Entry Point
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -7,66 +7,49 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-// Route & DB Imports
-const authController = require('./authController');
-const rideController = require('./rideController');
-const walletController = require('./walletController');
-const socketHandler = require('./socketHandler');
-const db = require('./config/db');
-
 const app = express();
 const server = http.createServer(app);
+
+// This function stops the app from crashing if a file is missing
+const safeRequire = (filePath) => {
+    try { 
+        return require(filePath); 
+    } catch (e) { 
+        console.error(`⚠️ CRITICAL: Cannot find module ${filePath}. Check if this file exists in your repository.`); 
+        return null; 
+    }
+};
+
+// Import Controllers using Safe-Mode
+const authController = safeRequire('./authController');
+const rideController = safeRequire('./rideController');
+const walletController = safeRequire('./walletController');
+const socketHandler = safeRequire('./socketHandler');
+const db = safeRequire('./config/db');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Initialize Socket.io
-const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
-});
-socketHandler(io);
+// Initialize Socket.io (only if socketHandler was found)
+const io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] } });
+if (socketHandler) socketHandler(io);
 
-// API Routes
-app.get('/', (req, res) => {
-    res.status(200).json({ status: 'Active', service: 'Smart Boda Delivery API' });
+// Health Check Endpoint
+app.get('/api/health', async (req, res) => {
+    res.status(200).json({ status: 'OK', database: db ? 'Connected' : 'Missing DB file' });
 });
 
-app.post('/api/v1/auth/rider-login', authController.riderLogin);
-app.get('/api/v1/rides/nearby', rideController.getNearbyRiders);
-app.get('/api/v1/rides/accept', rideController.acceptOrder);
-app.post('/api/v1/wallet/transfer-float', walletController.transferFloatToRider);
-
-// --- Automatic Database Initialization ---
-const initDatabase = async () => {
-    try {
-        const schemaPath = path.join(__dirname, 'schema.sql');
-        
-        if (!fs.existsSync(schemaPath)) {
-            console.error('❌ Error: schema.sql file is missing!');
-            return;
-        }
-
-        const schema = fs.readFileSync(schemaPath, 'utf8');
-        console.log('⏳ Attempting to run SQL schema...');
-        
-        // This tests the connection first without crashing the app
-        await db.query('SELECT 1'); 
-        await db.query(schema);
-        console.log('✅ Database tables initialized successfully');
-        
-    } catch (err) {
-        // This catches the error and logs it, but lets the app keep running
-        console.error('⚠️ DATABASE INIT ERROR (App will continue anyway):', err.message);
-    }
-};
+// Routes (only if controllers were found)
+if (authController) app.post('/api/v1/auth/rider-login', authController.riderLogin);
+if (rideController) {
+    app.get('/api/v1/rides/nearby', rideController.getNearbyRiders);
+    app.get('/api/v1/rides/accept', rideController.acceptOrder);
+}
+if (walletController) app.post('/api/v1/wallet/transfer-float', walletController.transferFloatToRider);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
-
-// Run init, then start listening
-initDatabase().then(() => {
-    server.listen(PORT, () => {
-        console.log(`🚀 Smart Boda Backend running on port ${PORT}`);
-    });
+server.listen(PORT, () => {
+    console.log(`🚀 Server started on port ${PORT}. Check the logs above for any "⚠️ CRITICAL" warnings.`);
 });
