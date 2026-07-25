@@ -13,34 +13,6 @@ const authController = require('./authController');
 const rideController = require('./rideController');
 const walletController = require('./walletController');
 const socketHandler = require('./socketHandler');
-const db = require('./config/db'); 
-
-const app = express();
-const server = http.createServer(app);
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Initialize Socket.io
-const io = new Server(server, {
-    cors: { origin: '*', methods: ['GET', 'POST'] }
-});
-
-    // app.js - Clean Server Entry Point
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
-const { Server } = require('socket.io');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
-
-// Route & DB Imports
-const authController = require('./authController');
-const rideController = require('./rideController');
-const walletController = require('./walletController');
-const socketHandler = require('./socketHandler');
 const db = require('./config/db');
 
 const app = express();
