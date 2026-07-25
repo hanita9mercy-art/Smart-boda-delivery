@@ -32,6 +32,17 @@ app.get('/', (req, res) => {
     res.status(200).json({ status: 'Active', service: 'Smart Boda Delivery API' });
 });
 
+// Health Check Endpoint
+app.get('/api/health', async (req, res) => {
+    try {
+        // This tests the database connection specifically
+        await db.query('SELECT NOW()'); 
+        res.status(200).json({ status: 'OK', database: 'Connected' });
+    } catch (err) {
+        res.status(500).json({ status: 'Error', message: 'Database connection failed' });
+    }
+});
+
 app.post('/api/v1/auth/rider-login', authController.riderLogin);
 app.get('/api/v1/rides/nearby', rideController.getNearbyRiders);
 app.get('/api/v1/rides/accept', rideController.acceptOrder);
