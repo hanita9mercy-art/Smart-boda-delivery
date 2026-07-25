@@ -16,7 +16,7 @@ const socketHandler = require('./socketHandler');
 const db = require('./config/db');
 
 const app = express();
-const server = http.createServer(app);
+const server = http.createServer(app); u
 
 // Middleware
 app.use(cors());
