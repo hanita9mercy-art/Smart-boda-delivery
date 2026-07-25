@@ -12,11 +12,11 @@ const server = http.createServer(app);
 
 // This function stops the app from crashing if a file is missing
 const safeRequire = (filePath) => {
-    try { 
-        return require(filePath); 
-    } catch (e) { 
-        console.error(`⚠️ CRITICAL: Cannot find module ${filePath}. Check if this file exists in your repository.`); 
-        return null; 
+    try {
+        return require(filePath);
+    } catch (e) {
+        console.error(`⚠️ CRITICAL: Cannot find module ${filePath}`);
+        return null;
     }
 };
 
@@ -37,19 +37,26 @@ if (socketHandler) socketHandler(io);
 
 // Health Check Endpoint
 app.get('/api/health', async (req, res) => {
-    res.status(200).json({ status: 'OK', database: db ? 'Connected' : 'Missing DB file' });
+    res.status(200).json({ status: 'OK', database: db ? 'Connected' : 'Disconnected' });
 });
 
 // Routes (only if controllers were found)
-if (authController) app.post('/api/v1/auth/rider-login', authController.riderLogin);
-if (rideController) {
-    app.get('/api/v1/rides/nearby', rideController.getNearbyRiders);
-    app.get('/api/v1/rides/accept', rideController.acceptOrder);
+if (authController) {
+    app.post('/api/v1/auth/rider-login', authController.riderLogin);
+    app.post('/api/v1/auth/rider-register', authController.riderRegister);
 }
-if (walletController) app.post('/api/v1/wallet/transfer-float', walletController.transferFloatToRider);
+
+if (rideController) {
+    app.get('/api/v1/rides/nearby', rideController.getNearbyRides);
+    app.get('/api/v1/rides/accept', rideController.acceptRide);
+}
+
+if (walletController) {
+    app.post('/api/v1/wallet/transfer', walletController.transfer);
+}
 
 // Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-    console.log(`🚀 Server started on port ${PORT}. Check the logs above for any "⚠️ CRITICAL" warnings.`);
+    console.log(`🚀 Server started on port ${PORT}.`);
 });
