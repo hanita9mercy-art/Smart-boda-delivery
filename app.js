@@ -69,4 +69,4 @@ initDatabase().then(() => {
     server.listen(PORT, () => {
         console.log(`🚀 Smart Boda Backend running on port ${PORT}`);
     });
-});)
+});
