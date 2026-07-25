@@ -59,3 +59,28 @@ initDatabase().then(() => {
         console.log(`🚀 Smart Boda Backend running on port ${PORT}`);
     });
 });
+const initDatabase = async () => {
+    try {
+        const schemaPath = path.join(__dirname, 'schema.sql');
+        
+        if (!fs.existsSync(schemaPath)) {
+            console.error('❌ Error: schema.sql file is missing!');
+            return;
+        }
+
+        const schema = fs.readFileSync(schemaPath, 'utf8');
+        console.log('⏳ Attempting to run SQL schema...');
+        
+        // This tests the connection first without crashing the app
+        await db.query('SELECT 1'); 
+        await db.query(schema);
+        console.log('✅ Database tables initialized successfully');
+        
+    } catch (err) {
+        // This catches the error and logs it, but lets the app keep running
+        console.error('⚠️ DATABASE INIT ERROR (App will continue anyway):', err.message);
+    }
+};
+
+// Make sure this is at the bottom to start the process
+initDatabase();
