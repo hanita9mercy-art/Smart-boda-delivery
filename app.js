@@ -1,4 +1,3 @@
-
 // app.js - Clean Server Entry Point
 const express = require('express');
 const http = require('http');
@@ -16,7 +15,7 @@ const socketHandler = require('./socketHandler');
 const db = require('./config/db');
 
 const app = express();
-const server = http.createServer(app); u
+const server = http.createServer(app);
 
 // Middleware
 app.use(cors());
@@ -42,26 +41,6 @@ app.post('/api/v1/wallet/transfer-float', walletController.transferFloatToRider)
 const initDatabase = async () => {
     try {
         const schemaPath = path.join(__dirname, 'schema.sql');
-        const schema = fs.readFileSync(schemaPath, 'utf8');
-        await db.query(schema);
-        console.log('✅ Database tables initialized successfully');
-    } catch (err) {
-        console.error('❌ Error initializing database:', err.message);
-    }
-};
-
-// Start Server
-const PORT = process.env.PORT || 5000;
-
-// Run init, then start listening
-initDatabase().then(() => {
-    server.listen(PORT, () => {
-        console.log(`🚀 Smart Boda Backend running on port ${PORT}`);
-    });
-});
-const initDatabase = async () => {
-    try {
-        const schemaPath = path.join(__dirname, 'schema.sql');
         
         if (!fs.existsSync(schemaPath)) {
             console.error('❌ Error: schema.sql file is missing!');
@@ -82,5 +61,12 @@ const initDatabase = async () => {
     }
 };
 
-// Make sure this is at the bottom to start the process
-initDatabase();
+// Start Server
+const PORT = process.env.PORT || 5000;
+
+// Run init, then start listening
+initDatabase().then(() => {
+    server.listen(PORT, () => {
+        console.log(`🚀 Smart Boda Backend running on port ${PORT}`);
+    });
+});)
