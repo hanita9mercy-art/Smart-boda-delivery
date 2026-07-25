@@ -59,3 +59,25 @@ initDatabase().then(() => {
         console.log(`🚀 Smart Boda Backend running on port ${PORT}`);
     });
 });
+// --- Updated Automatic Database Initialization ---
+const initDatabase = async () => {
+    try {
+        const schemaPath = path.join(__dirname, 'schema.sql');
+        
+        if (!fs.existsSync(schemaPath)) {
+            console.error('❌ Error: schema.sql file is missing!');
+            return;
+        }
+
+        const schema = fs.readFileSync(schemaPath, 'utf8');
+        console.log('⏳ Attempting to run SQL schema...');
+        await db.query(schema);
+        console.log('✅ Database tables initialized successfully');
+    } catch (err) {
+        // This will now print the FULL error object
+        console.error('❌ FATAL ERROR initializing database:', err);
+    }
+};
+
+// Ensure you are calling it like this at the bottom of app.js:
+initDatabase();
