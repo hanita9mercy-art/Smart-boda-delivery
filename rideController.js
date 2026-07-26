@@ -1,16 +1,19 @@
 const db = require('./config/db');
 
-// --- Helper: Pricing Logic ---
+// --- Helper: Pricing Logic (Updated for better rider compensation) ---
 const calculateFee = (distanceKM, pickupLocation) => {
-  const BASE_FARE = 2000;
-  const RATE_PER_KM = 350; 
-  const MINIMUM_FARE = 3000;
+  const BASE_FARE = 2500; // Increased base
+  const RATE_PER_KM = 400; // Increased rate
+  const MINIMUM_FARE = 3500; // Bumped minimum to match new rates
   
+  // List of town areas that trigger the 10% traffic premium
   const townAreas = ['KAMPALA_CENTRAL', 'PARLIAMENT', 'OLD_TAXI_PARK', 'NAKASERO'];
   const isTownPickup = pickupLocation && townAreas.includes(pickupLocation.toUpperCase());
   const trafficMultiplier = isTownPickup ? 1.1 : 1.0;
 
   const total = (BASE_FARE + (distanceKM * RATE_PER_KM)) * trafficMultiplier;
+  
+  // Round to nearest 500 for professional pricing
   const finalPrice = Math.round(total / 500) * 500;
 
   return Math.max(finalPrice, MINIMUM_FARE);
@@ -53,14 +56,43 @@ exports.getNearbyRides = async (req, res) => {
 exports.acceptRide = async (req, res) => {
   try {
     const { rideId, riderId } = req.body;
-    // Updated to match your primary key 'ride_id'
     await db.pool.query(
-      'UPDATE rides SET status = $1, rider_id = $2 WHERE ride_id = $3', 
-      ['ACCEPTED', riderId, rideId]
+      "UPDATE rides SET status = 'ACCEPTED', rider_id = $1 WHERE ride_id = $2", 
+      [riderId, rideId]
     );
-    res.status(200).json({ message: "Ride accepted successfully" });
+    res.status(200).json({ success: true, message: "Ride accepted successfully" });
   } catch (error) {
     console.error("Error accepting ride:", error);
     res.status(500).json({ message: "Failed to accept ride" });
+  }
+};
+
+// 4. Complete a ride
+exports.completeRide = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+    await db.pool.query(
+      "UPDATE rides SET status = 'COMPLETED' WHERE ride_id = $1",
+      [rideId]
+    );
+    res.status(200).json({ success: true, message: "Ride completed successfully" });
+  } catch (error) {
+    console.error("Error completing ride:", error);
+    res.status(500).json({ success: false, message: "Failed to complete ride" });
+  }
+};
+
+// 5. Cancel a ride
+exports.cancelRide = async (req, res) => {
+  try {
+    const { rideId } = req.body;
+    await db.pool.query(
+      "UPDATE rides SET status = 'CANCELLED' WHERE ride_id = $1",
+      [rideId]
+    );
+    res.status(200).json({ success: true, message: "Ride cancelled" });
+  } catch (error) {
+    console.error("Error cancelling ride:", error);
+    res.status(500).json({ success: false, message: "Failed to cancel ride" });
   }
 };
