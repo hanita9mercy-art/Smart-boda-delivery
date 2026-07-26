@@ -41,7 +41,9 @@ if (walletController) {
 // Socket.io
 const io = new Server(server, { cors: { origin: "*" } });
 if (socketHandler) socketHandler(io);
-
+app.get('/test', (req, res) => {
+    res.status(200).json({ message: "Server is fully operational!" });
+});
 // Server Listen
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
