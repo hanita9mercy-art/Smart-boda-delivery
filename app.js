@@ -26,7 +26,10 @@ app.post('/rider-login', authController.riderLogin);
 // Ride Routes
 app.get('/get-nearby-rides', rideController.getNearbyRides);
 app.post('/accept-ride', rideController.acceptRide);
-
+// Wallet Routes
+app.get('/api/rider/balance/:riderId', walletController.getRiderBalance);
+app.post('/api/rider/cash-out', walletController.riderCashOut);
+app.post('/api/agent/transfer-float', walletController.transferFloatToRider);
 // Initialize Socket.io
 socketHandler(io);
 
