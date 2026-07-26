@@ -1,10 +1,10 @@
 const db = require('./config/db');
 
-// --- Helper: Pricing Logic (Updated for better rider compensation) ---
+// --- Helper: Pricing Logic (Rate per KM set to 400) ---
 const calculateFee = (distanceKM, pickupLocation) => {
-  const BASE_FARE = 2500; // Increased base
-  const RATE_PER_KM = 400; // Increased rate
-  const MINIMUM_FARE = 3500; // Bumped minimum to match new rates
+  const BASE_FARE = 2000; 
+  const RATE_PER_KM = 400; // Updated to 400 per km
+  const MINIMUM_FARE = 3000;
   
   // List of town areas that trigger the 10% traffic premium
   const townAreas = ['KAMPALA_CENTRAL', 'PARLIAMENT', 'OLD_TAXI_PARK', 'NAKASERO'];
