@@ -6,9 +6,9 @@ const { Server } = require('socket.io');
 
 // Controllers
 const authController = require('./authController');
-const rideController = require('./rideController');
 const walletController = require('./walletController');
 const socketHandler = require('./socketHandler');
+const rideRoutes = require('./rideRoutes'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -24,12 +24,13 @@ app.post('/api/v1/auth/rider-register', authController.riderRegister);
 app.post('/rider-login', authController.riderLogin);
 
 // Ride Routes
-app.get('/get-nearby-rides', rideController.getNearbyRides);
-app.post('/accept-ride', rideController.acceptRide);
+app.use('/api/rides', rideRoutes);
+
 // Wallet Routes
 app.get('/api/rider/balance/:riderId', walletController.getRiderBalance);
 app.post('/api/rider/cash-out', walletController.riderCashOut);
 app.post('/api/agent/transfer-float', walletController.transferFloatToRider);
+
 // Initialize Socket.io
 socketHandler(io);
 
