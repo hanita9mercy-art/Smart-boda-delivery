@@ -1,49 +1,37 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
-require('dotenv').config();
 
-// Safe import helper
-const safeRequire = (path) => {
-    try { return require(path); }
-    catch (e) { console.error(`Failed to load ${path}:`, e.message); }
-};
+// Controllers
+const authController = require('./authController');
+const rideController = require('./rideController');
+const walletController = require('./walletController');
+const socketHandler = require('./socketHandler');
 
 const app = express();
 const server = http.createServer(app);
-
-// Controllers
-const authController = safeRequire('./authController');
-const rideController = safeRequire('./rideController');
-const walletController = safeRequire('./walletController');
-const socketHandler = safeRequire('./socketHandler');
+const io = new Server(server);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// --- ROUTES ---
-if (authController) {
-    app.post('/api/v1/auth/rider-register', authController.riderRegister);
-    if (authController.riderLogin) app.post('/rider-login', authController.riderLogin);
-}
+// Routes
+// Authentication Routes
+app.post('/api/v1/auth/rider-register', authController.riderRegister);
+app.post('/rider-login', authController.riderLogin);
 
-if (rideController) {
-    if (rideController.getNearbyRides) app.get('/get-nearby-rides', rideController.getNearbyRides);
-    if (rideController.acceptRide) app.post('/accept-ride', rideController.acceptRide);
-}
+// Ride Routes
+app.get('/get-nearby-rides', rideController.getNearbyRides);
+app.post('/accept-ride', rideController.acceptRide);
 
-if (walletController) {
-    if (walletController.transfer) app.post('/transfer', walletController.transfer);
-}
+// Initialize Socket.io
+socketHandler(io);
 
-// Socket.io
-const io = new Server(server, { cors: { origin: "*" } });
-if (socketHandler) socketHandler(io);
-app.get('/test', (req, res) => {
-    res.status(200).json({ message: "Server is fully operational!" });
+// Server Start
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-// Server Listen
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
