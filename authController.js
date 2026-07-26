@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const db = require('./db');
+const db = require('./config/db');
 
 exports.riderRegister = async (req, res) => {
   try {
