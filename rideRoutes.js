@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const rideController = require('./rideController');
 
-// Routes
+// Routes mapping
 router.post('/create', rideController.createRide);
 router.get('/available', rideController.getNearbyRides);
 router.patch('/accept', rideController.acceptRide);
