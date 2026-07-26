@@ -1,22 +1,24 @@
-const db = require('./config/db');
+const db = require('./db');
 
-exports.getNearbyRiders = async (req, res) => {
-    try {
-        const result = await db.query('SELECT * FROM riders WHERE status = $1', ['available']);
-        res.status(200).json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to fetch riders' });
-    }
+exports.getNearbyRides = async (req, res) => {
+  try {
+    // Logic to fetch rides
+    const result = await db.query('SELECT * FROM rides WHERE status = $1', ['available']);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error("Error fetching rides:", error);
+    res.status(500).json({ message: "Failed to fetch rides" });
+  }
 };
 
-exports.acceptOrder = async (req, res) => {
-    const { orderId, riderId } = req.body;
-    try {
-        await db.query('UPDATE orders SET status = $1, rider_id = $2 WHERE id = $3', ['accepted', riderId, orderId]);
-        res.status(200).json({ success: true, message: 'Order accepted' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to accept order' });
-    }
+exports.acceptRide = async (req, res) => {
+  try {
+    // Logic to accept a ride
+    const { rideId, riderId } = req.body;
+    await db.query('UPDATE rides SET status = $1, rider_id = $2 WHERE id = $3', ['accepted', riderId, rideId]);
+    res.status(200).json({ message: "Ride accepted successfully" });
+  } catch (error) {
+    console.error("Error accepting ride:", error);
+    res.status(500).json({ message: "Failed to accept ride" });
+  }
 };
