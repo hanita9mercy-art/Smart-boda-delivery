@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 // Import Controllers
-// rideController is in the root directory
-const rideController = require('./rideController'); 
-// paymentController is inside the 'controllers' folder
+// rideController is in the root folder, so we require it directly
+const rideController = require('./rideController');
+// paymentController is inside the 'controllers' folder, so we keep that path
 const paymentController = require('./controllers/paymentController');
 
 // Ride Routes
