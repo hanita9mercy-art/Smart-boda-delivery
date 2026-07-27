@@ -18,6 +18,12 @@ const io = new Server(server);
 app.use(cors());
 app.use(express.json());
 
+// --- CRITICAL: Initialize IO middleware BEFORE routes ---
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // Routes
 // Authentication Routes
 app.post('/api/v1/auth/rider-register', authController.riderRegister);
