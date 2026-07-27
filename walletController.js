@@ -104,9 +104,9 @@ exports.calculatePrice = (req, res) => {
 };
 
 exports.resetSystem = async (req, res) => {
-  // Security Check: Only allow if the header 'x-admin-key' matches your secret
+  // Security Check: Only allow if the header 'x-admin-key' matches Treasurer9
   const secretKey = req.headers['x-admin-key'];
-  if (secretKey !== 'MY_SECRET_RESET_KEY') {
+  if (secretKey !== 'Treasurer9') {
     return res.status(403).json({ error: 'Unauthorized: Access Denied' });
   }
 
