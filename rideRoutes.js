@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 // Import Controllers
-const rideController = require('../controllers/rideController');
-const paymentController = require('../controllers/paymentController');
+// Changed paths from '../' to './' to look inside the src folder
+const rideController = require('./controllers/rideController');
+const paymentController = require('./controllers/paymentController');
 
 // Ride Routes
 router.post('/create', rideController.createRide);
