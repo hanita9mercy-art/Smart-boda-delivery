@@ -1,4 +1,6 @@
-console.log("TEST: paymentController is being loaded");// This file is in /controllers, so ../ looks in the root folder
+console.log("TEST: paymentController is being loaded");
+
+// This file is in /controllers, so ../ looks in the root folder
 const { flw } = require('../paymentService');
 const Ride = require('../rideModel'); 
 
