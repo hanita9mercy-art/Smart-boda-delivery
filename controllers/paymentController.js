@@ -59,7 +59,7 @@ exports.handleWebhook = async (req, res) => {
         if (event.data.status === 'successful') {
             const txRef = event.data.tx_ref;
 
-            // IMPORTANT: Make sure 'transactionId' here matches your database schema
+            // Make sure 'transactionId' matches your database schema
             const updatedRide = await Ride.findOneAndUpdate(
                 { transactionId: txRef }, 
                 { status: 'paid' }, 
