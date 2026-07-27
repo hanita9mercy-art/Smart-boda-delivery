@@ -104,6 +104,12 @@ exports.calculatePrice = (req, res) => {
 };
 
 exports.resetSystem = async (req, res) => {
+  // Security Check: Only allow if the header 'x-admin-key' matches your secret
+  const secretKey = req.headers['x-admin-key'];
+  if (secretKey !== 'MY_SECRET_RESET_KEY') {
+    return res.status(403).json({ error: 'Unauthorized: Access Denied' });
+  }
+
   const client = await db.pool.connect();
   try {
     await client.query('BEGIN');
