@@ -31,6 +31,10 @@ app.get('/api/rider/balance/:riderId', walletController.getRiderBalance);
 app.post('/api/rider/cash-out', walletController.riderCashOut);
 app.post('/api/agent/transfer-float', walletController.transferFloatToRider);
 
+// Pricing & Admin Routes
+app.post('/api/rider/calculate-price', walletController.calculatePrice);
+app.post('/api/admin/reset-system', walletController.resetSystem);
+
 // Initialize Socket.io
 socketHandler(io);
 
