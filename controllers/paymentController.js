@@ -1,70 +1,37 @@
-// Step out of the 'controllers' folder to find these in the root
+// This file is in /controllers, so ../ looks in the root folder
 const { flw } = require('../paymentService');
 const Ride = require('../rideModel'); 
 
-// 1. Function to create the payment link
 exports.initiatePayment = async (req, res) => {
     try {
         const { email, name, phone, amount } = req.body;
-
-        if (!email || !amount) {
-            return res.status(400).json({ message: "Missing required payment details" });
-        }
+        if (!email || !amount) return res.status(400).json({ message: "Missing details" });
 
         const payload = {
             tx_ref: "tx-" + Date.now(),
             amount: amount,
             currency: "UGX",
             redirect_url: "https://smart-boda-delivery.onrender.com/payment-success",
-            customer: {
-                email: email,
-                name: name,
-                phonenumber: phone
-            },
-            customizations: {
-                title: "Smart Boda Delivery",
-                description: "Ride Payment"
-            }
+            customer: { email, name, phonenumber: phone },
+            customizations: { title: "Smart Boda Delivery", description: "Ride Payment" }
         };
 
         const response = await flw.PaymentLink.create(payload);
-        
-        res.status(200).json({
-            message: "Payment link created successfully",
-            paymentLink: response.data.link
-        });
+        res.status(200).json({ paymentLink: response.data.link });
     } catch (error) {
         console.error("Payment Error:", error);
         res.status(500).json({ message: "Failed to initiate payment" });
     }
 };
 
-// 2. Function to handle incoming Webhooks from Flutterwave
 exports.handleWebhook = async (req, res) => {
     try {
         const secretHash = process.env.FLW_SECRET_HASH;
-        const signature = req.headers["verif-hash"];
+        if (req.headers["verif-hash"] !== secretHash) return res.status(401).send('Unauthorized');
 
-        if (!signature || signature !== secretHash) {
-            return res.status(401).send('Unauthorized');
+        if (req.body.data.status === 'successful') {
+            await Ride.findOneAndUpdate({ transactionId: req.body.data.tx_ref }, { status: 'paid' });
         }
-
-        const event = req.body;
-
-        if (event.data.status === 'successful') {
-            const txRef = event.data.tx_ref;
-
-            const updatedRide = await Ride.findOneAndUpdate(
-                { transactionId: txRef }, 
-                { status: 'paid' }, 
-                { new: true }
-            );
-
-            if (!updatedRide) {
-                console.warn("Payment successful, but no ride found with ref:", txRef);
-            }
-        }
-
         res.status(200).send('Webhook Received');
     } catch (error) {
         console.error("Webhook Error:", error);
