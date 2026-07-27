@@ -1,19 +1,16 @@
 const db = require('./config/db');
 
-// --- Helper: Pricing Logic (Rate per KM set to 400) ---
+// --- Helper: Pricing Logic ---
 const calculateFee = (distanceKM, pickupLocation) => {
   const BASE_FARE = 2000; 
-  const RATE_PER_KM = 400; // Updated to 400 per km
+  const RATE_PER_KM = 400; 
   const MINIMUM_FARE = 3000;
   
-  // List of town areas that trigger the 10% traffic premium
   const townAreas = ['KAMPALA_CENTRAL', 'PARLIAMENT', 'OLD_TAXI_PARK', 'NAKASERO'];
   const isTownPickup = pickupLocation && townAreas.includes(pickupLocation.toUpperCase());
   const trafficMultiplier = isTownPickup ? 1.1 : 1.0;
 
   const total = (BASE_FARE + (distanceKM * RATE_PER_KM)) * trafficMultiplier;
-  
-  // Round to nearest 500 for professional pricing
   const finalPrice = Math.round(total / 500) * 500;
 
   return Math.max(finalPrice, MINIMUM_FARE);
@@ -21,20 +18,33 @@ const calculateFee = (distanceKM, pickupLocation) => {
 
 // --- Controller Actions ---
 
-// 1. Create a new ride request
+// 1. Create a new ride request & notify drivers via Socket.io
 exports.createRide = async (req, res) => {
   const { customer_id, pickup_location, dropoff_location, distance_km } = req.body;
+  
   try {
     const totalFee = calculateFee(distance_km, pickup_location);
     const query = `
       INSERT INTO rides (customer_id, pickup_location, dropoff_location, distance_km, total_fee_ugx, status)
       VALUES ($1, $2, $3, $4, $5, 'PENDING')
-      RETURNING ride_id, total_fee_ugx;
+      RETURNING ride_id, total_fee_ugx, pickup_location, dropoff_location;
     `;
     const values = [customer_id, pickup_location, dropoff_location, distance_km, totalFee];
     const result = await db.pool.query(query, values);
+    
+    const newRide = result.rows[0];
 
-    res.status(201).json({ success: true, message: 'Ride requested', ride: result.rows[0] });
+    // Emit real-time update to all connected drivers
+    req.io.emit('new_ride_request', {
+      message: 'A new ride request is available!',
+      ride: newRide
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Ride requested successfully', 
+      ride: newRide 
+    });
   } catch (err) {
     console.error('Error creating ride:', err);
     res.status(500).json({ success: false, message: 'Failed to create ride.' });
@@ -48,7 +58,7 @@ exports.getNearbyRides = async (req, res) => {
     res.status(200).json(result.rows);
   } catch (error) {
     console.error("Error fetching rides:", error);
-    res.status(500).json({ message: "Failed to fetch rides" });
+    res.status(500).json({ success: false, message: "Failed to fetch rides" });
   }
 };
 
@@ -63,7 +73,7 @@ exports.acceptRide = async (req, res) => {
     res.status(200).json({ success: true, message: "Ride accepted successfully" });
   } catch (error) {
     console.error("Error accepting ride:", error);
-    res.status(500).json({ message: "Failed to accept ride" });
+    res.status(500).json({ success: false, message: "Failed to accept ride" });
   }
 };
 
