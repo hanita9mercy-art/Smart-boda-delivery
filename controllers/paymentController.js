@@ -3,7 +3,15 @@ const { flw } = require('../services/paymentService');
 // Use the same export pattern as your authController
 exports.initiatePayment = async (req, res) => {
     try {
+        // This line helps you debug if your request fails
+        console.log("SENDING THIS TO FLUTTERWAVE:", req.body);
+
         const { email, name, phone, amount } = req.body;
+
+        // Basic check to ensure data exists before sending
+        if (!email || !amount) {
+            return res.status(400).json({ message: "Missing required payment details" });
+        }
 
         const payload = {
             tx_ref: "tx-" + Date.now(), // Unique reference for each transaction
