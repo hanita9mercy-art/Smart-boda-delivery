@@ -1,4 +1,4 @@
-const db = require('./db'); // Ensure this matches your file path
+console.log("DEBUG: app.js is starting...");const db = require('./db'); // Ensure this matches your file path
 
 exports.createRide = async (req, res) => {
     try {
