@@ -1,10 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Import Controllers
-// rideController is in the root
 const rideController = require('./rideController'); 
-// paymentController is inside the 'controllers' folder
 const paymentController = require('./controllers/paymentController');
 
 // Ride Routes
@@ -17,8 +14,7 @@ router.patch('/cancel', rideController.cancelRide);
 // Payment Routes
 router.post('/initiate-payment', paymentController.initiatePayment);
 
-// Webhook Route (THIS IS THE MISSING PIECE)
-// Flutterwave will send a POST request here when a payment is successful
+// Webhook Route
 router.post('/webhook', paymentController.handleWebhook);
 
 module.exports = router;
