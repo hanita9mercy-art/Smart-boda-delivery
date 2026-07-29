@@ -1,8 +1,8 @@
-console.log("TEST: paymentController is being loaded");
+const Flutterwave = require('flutterwave-node-v3');
+const Ride = require('../rideModel');
 
-// This file is in /controllers, so ../ looks in the root folder
-const { flw } = require('../paymentService');
-const Ride = require('../rideModel'); 
+// Initialize Flutterwave directly here (No need for paymentService.js)
+const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
 
 exports.initiatePayment = async (req, res) => {
     try {
