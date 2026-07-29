@@ -1,7 +1,6 @@
 const Flutterwave = require('flutterwave-node-v3');
 const Ride = require('../rideModel');
 
-// Initialize Flutterwave directly here (No need for paymentService.js)
 const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
 
 exports.initiatePayment = async (req, res) => {
@@ -13,9 +12,13 @@ exports.initiatePayment = async (req, res) => {
             tx_ref: "tx-" + Date.now(),
             amount: amount,
             currency: "UGX",
+            payment_options: "mobilemoney, banktransfer, card",
             redirect_url: "https://smart-boda-delivery.onrender.com/payment-success",
             customer: { email, name, phonenumber: phone },
-            customizations: { title: "Smart Boda Delivery", description: "Ride Payment" }
+            customizations: { 
+                title: "Smart Boda Delivery", 
+                description: "Ride Payment" 
+            }
         };
 
         const response = await flw.PaymentLink.create(payload);
@@ -29,11 +32,23 @@ exports.initiatePayment = async (req, res) => {
 exports.handleWebhook = async (req, res) => {
     try {
         const secretHash = process.env.FLW_SECRET_HASH;
-        if (req.headers["verif-hash"] !== secretHash) return res.status(401).send('Unauthorized');
+        const signature = req.headers["verif-hash"];
 
-        if (req.body.data.status === 'successful') {
-            await Ride.findOneAndUpdate({ transactionId: req.body.data.tx_ref }, { status: 'paid' });
+        // Verify the webhook signature
+        if (!signature || signature !== secretHash) {
+            return res.status(401).send('Unauthorized');
         }
+
+        const eventData = req.body.data;
+        if (eventData && eventData.status === 'successful') {
+            await Ride.findOneAndUpdate(
+                { transactionId: eventData.tx_ref }, 
+                { status: 'paid' },
+                { new: true }
+            );
+            console.log(`Ride ${eventData.tx_ref} marked as paid.`);
+        }
+        
         res.status(200).send('Webhook Received');
     } catch (error) {
         console.error("Webhook Error:", error);
