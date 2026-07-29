@@ -1,21 +1,23 @@
+console.log("DEBUG: app.js is starting...");
+
 const express = require('express');
-const router = express.Router();
+const app = express();
+const rideRoutes = require('./rideRoutes'); // This connects your routes
 
-// Import Controllers
-// rideController is in the root
-const rideController = require('./rideController');
+app.use(express.json());
 
-// paymentController is inside the 'controllers' sub-folder
-const paymentController = require('./controllers/paymentController');
+// Add Debug log to see if routes load
+console.log("DEBUG: Loading routes...");
+app.use('/rides', rideRoutes); 
 
-// Ride Routes
-router.post('/create', rideController.createRide);
-router.get('/available', rideController.getNearbyRides);
-router.patch('/accept', rideController.acceptRide);
-router.patch('/complete', rideController.completeRide);
-router.patch('/cancel', rideController.cancelRide);
+const PORT = process.env.PORT || 3000;
 
-// Payment Routes
-router.post('/initiate-payment', paymentController.initiatePayment);
+// Centralized error handling
+process.on('uncaughtException', (err) => {
+    console.error("FATAL ERROR: Uncaught Exception:", err);
+    process.exit(1);
+});
 
-module.exports = router;
+app.listen(PORT, () => {
+    console.log(`DEBUG: Server is running on port ${PORT}`);
+});
